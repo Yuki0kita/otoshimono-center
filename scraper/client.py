@@ -10,6 +10,7 @@ from __future__ import annotations
 import http.cookiejar
 import logging
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -19,6 +20,9 @@ from .parse import FoundItem, SearchPage, parse_search_page
 logger = logging.getLogger(__name__)
 
 _USER_AGENT = "otoshimono-center/0.1 (personal aggregator; polite crawl)"
+_REQUEST_TIMEOUT_SEC = 30
+_RETRY_ATTEMPTS = 3
+_RETRY_BACKOFF_SEC = 5
 
 
 class PortalClient:
@@ -31,7 +35,6 @@ class PortalClient:
         self._session_ready = False
 
     def _request(self, url: str, data: dict[str, list[str] | str] | None = None) -> str:
-        time.sleep(self._interval)
         body = None
         if data is not None:
             pairs: list[tuple[str, str]] = []
@@ -41,8 +44,25 @@ class PortalClient:
                 else:
                     pairs.append((key, value))
             body = urllib.parse.urlencode(pairs).encode()
-        with self._opener.open(url, data=body, timeout=30) as res:
-            return res.read().decode("utf-8", errors="replace")
+        for attempt in range(1, _RETRY_ATTEMPTS + 1):
+            time.sleep(self._interval)
+            try:
+                with self._opener.open(
+                    url, data=body, timeout=_REQUEST_TIMEOUT_SEC
+                ) as res:
+                    return res.read().decode("utf-8", errors="replace")
+            except (urllib.error.URLError, TimeoutError) as exc:
+                if attempt == _RETRY_ATTEMPTS:
+                    raise
+                logger.warning(
+                    "request failed (%d/%d), retrying in %ss: %s",
+                    attempt,
+                    _RETRY_ATTEMPTS,
+                    _RETRY_BACKOFF_SEC,
+                    exc,
+                )
+                time.sleep(_RETRY_BACKOFF_SEC)
+        raise AssertionError("unreachable")
 
     def _ensure_session(self) -> None:
         if self._session_ready:
