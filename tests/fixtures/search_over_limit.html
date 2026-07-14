@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+<html lang="ja" class="h-100">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>落とし物検索 : 落とし物検索 | 警察国民向けポータル : 警察庁</title>
+    <link rel="stylesheet" href="/ZDSERVFP/css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="/ZDSERVFP/css/custom.css">
+    <link rel="stylesheet" href="/ZDSERVFP/css/common.css">
+    <link rel="stylesheet" href="/ZDSERVFP/font/css/all.css">
+    <link rel="stylesheet" href="/ZDSERVFP/css/jquery-ui.css">
+    <link rel="icon" type="image/x-icon" href="/ZDSERVFP/img/favicon.ico">
+    <script type="text/javascript" src="/ZDSERVFP/js/jquery-3.5.1.min.js"></script>
+    <script defer src="/ZDSERVFP/font/js/all.js"></script>
+    <script type="text/javascript" src="/ZDSERVFP/js/common.js"></script>
+</head>
+<body class="d-flex flex-column h-100" onload="SZDWA0101_onload()">
+    <!-- ヘッダー部　ここから-->
+    <!-- 共通ヘッダインクルード -->
+    
+
+
+
+
+
+
+
+
+
+
+    <script type="text/javascript">
+        $(function() {
+            if ("SZDWA0101" == 'SZDWA0101') {
+            	// スマホの場合クラスを追加
+            	if (window.navigator.userAgent.match(/iPhone|Android.+Mobile/)) {
+            		$("html").removeClass("h-100");
+            	}
+            }
+        });
+    </script>
+
+	<header id="headerI" class="sticky-top common-parts" role="banner" style="z-index:1035">
+		<div class="topHeader d-md-block d-none">
+			<dl class="bigsmlbox header-item">
+				<dt class="pt-1">文字サイズ</dt>
+				<dd class="buttonCharChange">
+					<button id="btn_CharChangeLeft" class="buttonCharChangeLeft header-item pt-1" type="button">標準</button>
+					<button id="btn_CharChangeRight" class="buttonCharChangeRight header-item pt-1" type="button">大</button>
+				</dd>
+			</dl>
+			<input type="hidden" name="commonHeaderZoomSize" id="commonHeaderZoomSize" value="125" />
+			<div id="page_top_hd1" class="honbun header-item float-right pt-1">
+				<a href="#">本文へ</a>
+			</div>
+		</div>
+			
+		<div class="toolHeaderArea ml-2 ml-md-3">
+			<div class="toolHeaderTitle">
+				<img class="img_title img-fluid" src="/ZDSERVFP/img/img_site_logo.png">
+			</div>
+			<div class="toolHeader">
+				
+				<div class="panel-group wrapper">
+				
+					<table id="menu" class="collapse menuArea" style="z-index:1036">
+						<tr class="table-nav-item nav-panel d-md-none">
+						    <td>
+						    	<dl class="bigsmlbox header-item">
+									<dt class="pt-1">文字サイズ</dt>
+									<dd class="buttonCharChange">
+										<button id="btn_CharChangeLeftSp" class="buttonCharChangeLeft header-item pt-1"
+											type="button">標準</button>
+										<button id="btn_CharChangeRightSp" class="buttonCharChangeRight header-item pt-1"
+											type="button">大</button>
+									</dd>
+								</dl>
+								<div class="toolHeaderMenu mr-0 mr-md-1 pl-1 pl-md-2 d-md-none">
+									<img class="img_menu" src="/ZDSERVFP/img/sp_close_btn.svg" data-target="#menu">
+									<div class="toolHeaderImgText nobr">閉じる　</div>
+								</div>
+						    </td>
+						</tr>
+		  			 	
+						
+			        		<tr class="table-item"><td><a class="table-item-link" href="URL" onClick="return checkSubmit();">ユーザメニュー1</a></td></tr>
+			            
+			        		<tr class="table-item"><td><a class="table-item-link" href="URL" onClick="return checkSubmit();">ユーザメニュー2</a></td></tr>
+			            
+			        		<tr class="table-item"><td><a class="table-item-link" href="URL" onClick="return checkSubmit();">ユーザメニュー3</a></td></tr>
+			            
+			            <tr class="table-item"><td><a class="table-item-link" href="/ZDSERVFP/LogOut" onclick="return checkSubmit();">ログアウト</a></td></tr>
+			            <tr class="table-item"><td><a class="close-menu" onclick="chCloseMenu()">閉じる</a></td></tr>
+					</table>
+				</div>
+				
+				
+				<div id="page_top_hd2" class="honbun header-item d-block d-md-none">
+					<a class="nobr" href="#">本文へ</a>
+				</div>
+
+  			 	
+				
+			</div>
+		</div>
+
+		<div class="titleHeader">
+			<span class="gyomuCategory">落とし物検索</span>
+			<div class="gyomuTitle" id="page-title">落とし物検索</div>
+		</div>
+
+	</header>
+
+
+    <!-- ヘッダー部　ここまで-->
+    <form id="SZDWA0101Dto" name="SZDTA0101Dto" action="/ZDSERVFP/SZDWA0101/search" method="POST">
+    <!-- 言語マップ取得 -->
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+<div id="messageAreaError" class="common-parts">
+<div class="container">
+    <article class="mt-2">
+        <div class="container pl-0 pt-md-2 pb-md-2 msg-error">
+            
+            <div>
+                <span class="fa-stack"> <i class="fas fa-exclamation-circle fa-stack-1x"></i>
+                </span>
+                検索条件に一致するデータは500件を超えているため、表示できません。検索条件を変更し、再度検索してください。
+            </div>
+            
+        </div>
+    </article>
+</div>
+</div>
+
+
+
+
+
+    <!-- エラーメッセージエリア -->
+    <div class="container mt-3">
+    <article>
+      <!-- Multiselectがくずれてしまうのでinput-sectionは指定していない -->
+      <section>
+        <div class="container" id="accordionExample">
+          <div class="def-form">
+            <div class="row">
+              <label class="col-6 col-form-label align-self-center data-group-title" id="szdwa0101-0020">検索条件</label>
+              <div class="col-6 text-right">
+                <button class="btn btn-link close-button mt-3" type="button" data-toggle="collapse"
+                  data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  <p class="close-link">
+                    <nobr> <i class="fas fa-angle-up"></i><label id="szdwa0101-0030">閉じる</label></nobr>
+                  </p>
+                </button>
+                <button class="btn btn-link open-button mt-3" type="button" data-toggle="collapse"
+                  data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"
+                  style="display: none;">
+                  <p class="close-link">
+                    <nobr> <i class="fas fa-angle-down"></i><label id="szdwa0101-0031">開く</label></nobr>
+                  </p>
+                </button>
+              </div>
+            </div>
+            <div class="form-group row show" id="collapseOne" aria-labelledby="headingOne"
+              data-parent="#accordionExample">
+              <div class="container">
+                <!-- 拾得日 -->
+                <div class="row mt-3">
+                  <div class="col-xl-2  mandatory-item">
+                    <strong><label id="szdwa0101-0040">落とした日</label></strong>
+                  </div>
+                  <div class="col-xl-10">
+                    <div class="row">
+                      <div class="col-xl-3">
+                        <div class="form-group">
+                          <div class="input-group date" id="startdate" data-target-input="nearest">
+                            <input id="szdwa0101dto-ishitsufromdate" name="ishitsuFromDate" style="height: 2.5rem" class="form-control " type="text" value="20260701" size="10" maxlength="10"/>
+                            <div class="input-group-append">
+                              <div class="input-group-text" style="height: 2.5rem">
+                                <!-- カレンダーボタン1 -->
+                                <input type="text" value="" id="selDate1" style="display:none;"/>
+                                <input type="hidden" value="" id="selDate1Hidden"/>
+                              </div>
+                            </div>
+                            <span class="input-group-addon align-self-center" id="szdwa0101-0050">から</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xl-3">
+                        <div class="form-group">
+                          <div class="input-group date" id="startdate" data-target-input="nearest">
+                            <input id="szdwa0101dto-ishitsutodate" name="ishitsuToDate" style="height: 2.5rem" class="form-control datetimepicker-input " type="text" value="20260714" size="10" maxlength="10"/>
+                            <div class="input-group-append">
+                              <div class="input-group-text" style="height: 2.5rem">
+                                <!-- カレンダーボタン2 -->
+                                <input type="text" value="" id="selDate2" style="display:none;"/>
+                                <input type="hidden" value="" id="selDate2Hidden"/>
+                              </div>
+                            </div>
+                            <span class="input-group-addon align-self-center" id="szdwa0101-0060">まで</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <hr>
+                <!-- 拾得場所 -->
+                <div class="row">
+                  <div class="col-xl-2">
+                    <strong><label id="szdwa0101-0070">落とした場所</label></strong>
+                  </div>
+                  <div class="col-xl-10">
+                    <div class="row">
+                      <div class="col-xl-4">
+                        <div class="row mt-2">
+                          <div class="col">
+                            <label for="place1" class="mr-2 mandatory-item" id="szdwa0101-0080">
+                              都道府県</label>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-xl-10 mt-xl-0 mt-n2">
+                            <select id="kensaku-multi-pref" name="prefValue" class="kensakuMultiPrefClass " multiple="multiple"><option value="10" selected="selected">北海道</option><option value="20" selected="selected">青森県</option><option value="21" selected="selected">岩手県</option><option value="22" selected="selected">宮城県</option><option value="23" selected="selected">秋田県</option><option value="24" selected="selected">山形県</option><option value="25" selected="selected">福島県</option><option value="30" selected="selected">東京都</option><option value="40" selected="selected">茨城県</option><option value="41" selected="selected">栃木県</option><option value="42" selected="selected">群馬県</option><option value="43" selected="selected">埼玉県</option><option value="44" selected="selected">千葉県</option><option value="45" selected="selected">神奈川県</option><option value="46" selected="selected">新潟県</option><option value="47" selected="selected">山梨県</option><option value="48" selected="selected">長野県</option><option value="49" selected="selected">静岡県</option><option value="50" selected="selected">富山県</option><option value="51" selected="selected">石川県</option><option value="52" selected="selected">福井県</option><option value="53" selected="selected">岐阜県</option><option value="54" selected="selected">愛知県</option><option value="55" selected="selected">三重県</option><option value="60" selected="selected">滋賀県</option><option value="61" selected="selected">京都府</option><option value="62" selected="selected">大阪府</option><option value="63" selected="selected">兵庫県</option><option value="64" selected="selected">奈良県</option><option value="65" selected="selected">和歌山県</option><option value="70" selected="selected">鳥取県</option><option value="71" selected="selected">島根県</option><option value="72" selected="selected">岡山県</option><option value="73" selected="selected">広島県</option><option value="74" selected="selected">山口県</option><option value="80" selected="selected">徳島県</option><option value="81" selected="selected">香川県</option><option value="82" selected="selected">愛媛県</option><option value="83" selected="selected">高知県</option><option value="90" selected="selected">福岡県</option><option value="91" selected="selected">佐賀県</option><option value="92" selected="selected">長崎県</option><option value="93" selected="selected">熊本県</option><option value="94" selected="selected">大分県</option><option value="95" selected="selected">宮崎県</option><option value="96" selected="selected">鹿児島県</option><option value="97" selected="selected">沖縄県</option></select><input type="hidden" name="_prefValue" value="1"/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xl-4">
+                        <div class="row mt-md-2 mt-3">
+                          <div class="col">
+                            <label for="place2" id="szdwa0101-0090">市区町村</label>
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-xl-10 mt-md-0 mt-n2">
+                            <select id="kensaku-multi-city" name="cityCdValue" multiple="multiple"></select><input type="hidden" name="_cityCdValue" value="1"/>
+                          </div>
+                          <div class="col-xl-2">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-xl-4">
+                        <div class="row">
+                          <div class="col">
+                            &nbsp;
+                          </div>
+                        </div>
+                        <div class="row mt-xl-2 mt-n3">
+                          <div class="col">
+                            <input id="szdwa0101dto-fushoflg" name="fushoFlg" class="mt-xl-0 mt-md-n5 form-select form-select-sm" type="checkbox" value="true" checked="checked"/><label for="szdwa0101dto-fushoflg"></label><input type="hidden" name="_fushoFlg" value="on"/>
+                              <label class="" for="szdwa0101dto-fushoflg" id="szdwa0101-0100">不詳を含む</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-xl-3">
+                        <label for="place3" id="szdwa0101-0110">場所の種類</label>
+                        <select id="szdwa0101dto-bashoshurui" name="bashoShuruiValue" class="mt-xl-0 mt-n2 form-control"><option value="" selected="selected"></option><option value="01">路上／歩道上</option><option value="02">駐車場</option><option value="03">空き地</option><option value="04">公園</option><option value="05">田畑</option><option value="06">河川敷</option><option value="07">海岸</option><option value="08">鉄道</option><option value="09">バス</option><option value="10">タクシー</option><option value="11">航空</option><option value="12">船舶</option><option value="13">店舗</option><option value="14">飲食店</option><option value="15">宿泊施設</option><option value="16">病院</option><option value="17">官公署</option><option value="18">学校</option><option value="19">運動施設</option><option value="20">レジャー施設</option><option value="21">神社・仏閣</option><option value="22">文化施設</option><option value="23">金融機関</option><option value="24">無人ＡＴＭ</option><option value="25">郵便局</option><option value="26">民家敷地内</option><option value="99">不明／その他</option></select>
+                      </div>
+                      <div class="col-xl-5 mt-xl-0 mt-2">
+                        <label for="place4" id="szdwa0101-0120">施設名</label>
+                        <input id="szdwa0101dto-shisetsunm" name="shisetsuNm" name="found_location" placeholder="〇〇〇など" class="mt-lg-0 mt-n2 form-control " type="text" value="" size="23" maxlength="205"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <hr>
+                <!-- 拾得物 -->
+                <div class="row">
+                  <div class="col-xl-2">
+                    <strong><label id="szdwa0101-0130">落とし物</label></strong>
+                    <div class="row mt-2">
+                      <div class="col-xl-12 col-12">
+                        <div class="custom-control custom-radio">
+                          <input id="szdwa0101dto-searchmethod1" name="searchMethod" name="searchCategoryKbn" class="custom-control-input" onchange="SZDWA0101_selectBuppinNm01()" type="radio" value="1" checked="checked"/>
+                          <label class="custom-control-label" for="szdwa0101dto-searchmethod1" id="szdwa0101-0140">物品名から検索</label>
+                        </div>
+                      </div>
+                      <div class="col-xl-12 col-12">
+                        <div class="custom-control custom-radio">
+                          <input id="szdwa0101dto-searchmethod2" name="searchMethod" name="searchCategoryKbn" class="custom-control-input" onchange="SZDWA0101_selectKeyword01()" type="radio" value="2"/>
+                          <label class="custom-control-label" for="szdwa0101dto-searchmethod2" id="szdwa0101-0150">キーワードで検索</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col" id="searchCategoryKbn1">
+                    <div class="row">
+                      <div class="col">
+                        <div class="row">
+                          <div class="col-xl-3">
+                            <label for="daibunrui" class="mandatory-item" id="szdwa0101-0160">種類</label>
+                            <select id="szdwa0101dto-bunrui" name="bunruiValue" class="mt-xl-0 mt-n2 form-control "><option value=""></option><option value="1000">現金</option><option value="1200">かばん類</option><option value="1400">袋・封筒類</option><option value="1600">財布類</option><option value="1800">カードケース類</option><option value="2000">カメラ類</option><option value="2200">時計類</option><option value="2400">めがね類</option><option value="2600">電気製品類</option><option value="2800">携帯電話類</option><option value="3000">貴金属類</option><option value="3200">趣味・娯楽用品類</option><option value="3400">証明書類・カード類</option><option value="3600">有価証券類</option><option value="3800">著作品類</option><option value="4000">手帳・文具類</option><option value="4200">書類・紙類</option><option value="4400">小包・箱類</option><option value="4600">衣類・履物類</option><option value="4800">かさ類</option><option value="5000">鍵類</option><option value="5200">生活用品類</option><option value="5400">医療・化粧品類</option><option value="5600">食料品類</option><option value="5800" selected="selected">動植物類</option><option value="9900">その他</option></select>
+                          </div>
+                          <div class="col-xl-3 mt-xl-0 mt-2">
+                            <label for="category2" id="szdwa0101-0170">品名</label>
+                            <select id="szdwa0101dto-goodstype" name="goodsTypeValue" class="mt-xl-0 mt-n2 form-control"><option value="" selected="selected"></option><option value="5801">動物</option><option value="5802">植物</option><option value="5803">動植物関連品</option></select>
+                          </div>
+                          <div class="col-xl-6 mt-xl-0 mt-2">
+                            <label for="category3" id="szdwa0101-0180">物品名</label>
+                            <select id="szdwa0101dto-buppinnm" name="buppinNmValue" class="col-xl-9 mt-xl-0 mt-n2 form-control"></select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                  <div class="col" id="searchCategoryKbn2">
+                    <div class="row">
+                      <div class="col">
+                        <label for="place1" class="mandatory-item mb-n5"></label>
+                        <input id="szdwa0101dto-keyword" name="keyword" placeholder="品名等を複数指定できます（空白区切り）" class="form-control " type="text" value="" size="64" maxlength="64"/>
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="ml-4">
+                        例)エコバッグ　白色　※在中品の"色"はキーワードとして指定できません。
+                      </div>
+                    </div>
+                    <div class="row mt-2">
+                      <div class="col-xl-3 col-12">
+                        <div class="custom-control custom-radio">
+                          <input id="szdwa0101dto-conditionflg1" name="conditionFlg" name="searchKeywordKbn" class="custom-control-input" type="radio" value="1" checked="checked"/>
+                          <label class="custom-control-label" for="szdwa0101dto-conditionflg1" id="szdwa0101-0190">全てを含む</label>
+                        </div>
+                      </div>
+                      <div class="col-xl-3 col-12">
+                        <div class="custom-control custom-radio">
+                          <input id="szdwa0101dto-conditionflg2" name="conditionFlg" name="searchKeywordKbn" class="custom-control-input" type="radio" value="2"/>
+                          <label class="custom-control-label" for="szdwa0101dto-conditionflg2" id="szdwa0101-0200">いずれかを含む</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <hr>
+                <div class="row">
+                  <div class="col mt-2 mb-2 text-center">
+                    &nbsp;
+                    <button type="button" class="btn btn-secondary rounded-pill btnsize-m" data-toggle="modal"
+                      data-target="#conditionDlg" onClick="SZDWA0101_init()">
+                      クリア
+                    </button>
+                    <button type="submit" class="btn btn-primary rounded-pill btnsize-m" data-toggle="modal"
+                      data-target="#conditionDlg" id="search-submit" onClick="SZDWA0101_search()">
+                      検索
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- dummy行 -->
+            <div class="row">
+              <div class="col">
+                &nbsp;
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </article>
+    <!-- 検索結果一覧 -->
+    
+    <aside class="mt-4 mb-4">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-12 col-12">
+            <div class="row actionArea">
+              <div class="col-lg-4 col-12 order-md-1 order-2  pl-0">
+                <button type="submit"
+                    class="btn btn-secondary rounded-pill btnsize-m border-0 shadow-none"
+                    id="back-submit"
+                    formaction="/ZDSERVFP/SZDWA0101/back">
+                      <i class="fas fa-angle-left fa-fw iconsize-m"></i>
+                      戻る
+                      </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <!-- hidden領域 -->
+  <input id="szdwa0101dto-prefcheck" name="prefCheck" type="hidden" value="10"/>
+  <input id="szdwa0101dto-keywordedit" name="keywordEdit" type="hidden" value=""/>
+  <input id="szdwa0101dto-sortnum" name="sortNum" type="hidden" value=""/>
+  <input id="szdwa0101dto-sorttype" name="sortType" type="hidden" value=""/>
+  <input id="szdwa0101dto-pagetoprecordnum" name="pageTopRecordNum" type="hidden" value="0"/>
+  <input id="szdwa0101dto-dispcountperpageselect" name="dispCountPerPageSelect" type="hidden" value="10,20,100"/>
+  <input id="szdwa0101dto-limitnum" name="limitNum" type="hidden" value="500"/>
+  <input id="szdwa0101dto-langcd" name="langCd" type="hidden" value="01"/>
+  <input id="szdwa0101dto-initishitsutodate" name="initIshitsuToDate" type="hidden" value="2026/07/14"/>
+  <input id="szdwa0101dto-initfushoflg" name="initFushoFlg" type="hidden" value="true"/>
+  <input id="szdwa0101dto-initsearchmethod" name="initSearchMethod" type="hidden" value="1"/>
+  <input id="szdwa0101dto-initconditionflg" name="initConditionFlg" type="hidden" value="1"/>
+  <input id="szdwa0101dto-totalrecordcount" name="totalRecordCount" type="hidden" value="0"/>
+</form>
+    <!-- フッター部　ここから-->
+    <!-- 共通フッタインクルード -->
+    
+
+
+
+
+
+
+
+    <footer id="footerI" role="contentinfo" class="mt-auto common-parts" style="background-color: #EEEEEE;">
+        <div class="container">
+            <nav class="footerArea" role="navigation" aria-label="フッターリンク">
+                <div class="footerLink ml-md-3 ml-1">
+                    <ul>
+                        <li><a href="https://www.pcf.npa.go.jp/about/about.html" class="commonFooterLink" >このサイトについて</a></li>
+                        <li><a href="https://www.pcf.npa.go.jp/terms/terms.html" class="commonFooterLink" >利用規約・免責事項・著作権</a></li>
+                        <li><a href="https://www.pcf.npa.go.jp/privacy/privacy.html" class="commonFooterLink" >プライバシーポリシー</a></li>
+                        <li><a href="https://www.pcf.npa.go.jp/policy/accessibility.html" class="commonFooterLink" >ウェブアクセシビリティ</a></li>
+                    </ul>
+                </div>
+                <div class="d-block d-md-none footerLink-height"></div>
+                <div class="nav-hr d-block d-md-none"><hr class="mb-0 mt-4"></div>
+                <div class="infoArea d-block">
+                    <div class="infoBox">
+                        <div class="infoBoxTitleImg mr-3 pl-0">
+                            <img src="/ZDSERVFP/img/logo.svg" >
+                        </div>
+                        <div class="infoBoxTextArea">
+                        <div class="infoBoxHojinNm pt-md-3 pb-md-1 mt-0">法人番号：8000012130001</div><div class="infoBoxPotable pt-md-3 pb-md-1">国民ポータル</div>
+                        </div>
+                    </div>
+                    <div class="infoBoxCopyRight pt-md-3 pb-md-1">Copyright ©︎ National Police Agency. <br class="d-block d-md-none" /> All Rights Reserved.</div>
+                </div>
+            </nav>
+        </div>
+    </footer>
+    <div id="page_top"><a href="#"></a></div>
+
+    <!-- フッター部　ここまで-->
+
+    <script type="text/javascript" src="/ZDSERVFP/js/jquery-ui.js"></script>
+    <script type="text/javascript" src="/ZDSERVFP/js/popper.min.js"></script>
+    <script type="text/javascript" src="/ZDSERVFP/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/ZDSERVFP/js/national.js"></script>
+    <script type="text/javascript" src="/ZDSERVFP/js/bootstrap-multiselect.js"></script>
+    <!-- 多言語対応 -->
+    <script>
+        
+            $('label#szdwa0101-0140').html('物品名から検索');
+            $('div#szdwa0101-0140').html('物品名から検索');
+            $('span#szdwa0101-0140').html('物品名から検索');
+        
+            $('label#szdwa0101-0040').html('落とした日');
+            $('div#szdwa0101-0040').html('落とした日');
+            $('span#szdwa0101-0040').html('落とした日');
+        
+            $('label#szdwa0101-0260').html('市区町村');
+            $('div#szdwa0101-0260').html('市区町村');
+            $('span#szdwa0101-0260').html('市区町村');
+        
+            $('label#szdwa0101-0120').html('施設名');
+            $('div#szdwa0101-0120').html('施設名');
+            $('span#szdwa0101-0120').html('施設名');
+        
+            $('label#szdwa0101-0240').html('拾われた日付<br>(保管満期日)');
+            $('div#szdwa0101-0240').html('拾われた日付<br>(保管満期日)');
+            $('span#szdwa0101-0240').html('拾われた日付<br>(保管満期日)');
+        
+            $('label#szdwa0101-0100').html('不詳を含む');
+            $('div#szdwa0101-0100').html('不詳を含む');
+            $('span#szdwa0101-0100').html('不詳を含む');
+        
+            $('label#szdwa0101-0320').html('問い合わせ番号');
+            $('div#szdwa0101-0320').html('問い合わせ番号');
+            $('span#szdwa0101-0320').html('問い合わせ番号');
+        
+            $('label#szdwa0101-0220').html('検索');
+            $('div#szdwa0101-0220').html('検索');
+            $('span#szdwa0101-0220').html('検索');
+        
+            $('label#page-title').html('落とし物検索');
+            $('div#page-title').html('落とし物検索');
+            $('span#page-title').html('落とし物検索');
+        
+            $('label#szdwa0101-0300').html('その他の物品など');
+            $('div#szdwa0101-0300').html('その他の物品など');
+            $('span#szdwa0101-0300').html('その他の物品など');
+        
+            $('label#szdwa0101-0200').html('いずれかを含む');
+            $('div#szdwa0101-0200').html('いずれかを含む');
+            $('span#szdwa0101-0200').html('いずれかを含む');
+        
+            $('label#szdwa0101-0090').html('市区町村');
+            $('div#szdwa0101-0090').html('市区町村');
+            $('span#szdwa0101-0090').html('市区町村');
+        
+            $('label#szdwa0101-0070').html('落とした場所');
+            $('div#szdwa0101-0070').html('落とした場所');
+            $('span#szdwa0101-0070').html('落とした場所');
+        
+            $('label#szdwa0101-0290').html('特徴');
+            $('div#szdwa0101-0290').html('特徴');
+            $('span#szdwa0101-0290').html('特徴');
+        
+            $('label#szdwa0101-0190').html('全てを含む');
+            $('div#szdwa0101-0190').html('全てを含む');
+            $('span#szdwa0101-0190').html('全てを含む');
+        
+            $('label#szdwa0101-0050').html('から');
+            $('div#szdwa0101-0050').html('から');
+            $('span#szdwa0101-0050').html('から');
+        
+            $('label#szdwa0101-0270').html('場所の<br>種類');
+            $('div#szdwa0101-0270').html('場所の<br>種類');
+            $('span#szdwa0101-0270').html('場所の<br>種類');
+        
+            $('label#szdwa0101-0170').html('品名');
+            $('div#szdwa0101-0170').html('品名');
+            $('span#szdwa0101-0170').html('品名');
+        
+            $('label#szdwa0101-0030').html('閉じる');
+            $('div#szdwa0101-0030').html('閉じる');
+            $('span#szdwa0101-0030').html('閉じる');
+        
+            $('label#szdwa0101-0250').html('拾われた場所');
+            $('div#szdwa0101-0250').html('拾われた場所');
+            $('span#szdwa0101-0250').html('拾われた場所');
+        
+            $('label#szdwa0101-0150').html('キーワードで検索');
+            $('div#szdwa0101-0150').html('キーワードで検索');
+            $('span#szdwa0101-0150').html('キーワードで検索');
+        
+            $('label#szdwa0101-0230').html('表示件数');
+            $('div#szdwa0101-0230').html('表示件数');
+            $('span#szdwa0101-0230').html('表示件数');
+        
+            $('label#szdwa0101-0031').html('開く');
+            $('div#szdwa0101-0031').html('開く');
+            $('span#szdwa0101-0031').html('開く');
+        
+            $('label#szdwa0101-0130').html('落とし物');
+            $('div#szdwa0101-0130').html('落とし物');
+            $('span#szdwa0101-0130').html('落とし物');
+        
+            $('label#szdwa0101-0020 ').html('検索条件');
+            $('div#szdwa0101-0020 ').html('検索条件');
+            $('span#szdwa0101-0020 ').html('検索条件');
+        
+            $('label#szdwa0101-0210').html('クリア');
+            $('div#szdwa0101-0210').html('クリア');
+            $('span#szdwa0101-0210').html('クリア');
+        
+            $('label#szdwa0101-0110').html('場所の種類');
+            $('div#szdwa0101-0110').html('場所の種類');
+            $('span#szdwa0101-0110').html('場所の種類');
+        
+            $('label#szdwa0101-0330').html('戻る');
+            $('div#szdwa0101-0330').html('戻る');
+            $('span#szdwa0101-0330').html('戻る');
+        
+            $('label#szdwa0101-0310').html('問い合わせ先');
+            $('div#szdwa0101-0310').html('問い合わせ先');
+            $('span#szdwa0101-0310').html('問い合わせ先');
+        
+            $('label#szdwa0101-0180').html('物品名');
+            $('div#szdwa0101-0180').html('物品名');
+            $('span#szdwa0101-0180').html('物品名');
+        
+            $('label#szdwa0101-0080').html('都道府県');
+            $('div#szdwa0101-0080').html('都道府県');
+            $('span#szdwa0101-0080').html('都道府県');
+        
+            $('label#szdwa0101-0160').html('種類');
+            $('div#szdwa0101-0160').html('種類');
+            $('span#szdwa0101-0160').html('種類');
+        
+            $('label#szdwa0101-0060').html('まで');
+            $('div#szdwa0101-0060').html('まで');
+            $('span#szdwa0101-0060').html('まで');
+        
+            $('label#szdwa0101-0280').html('拾われた物');
+            $('div#szdwa0101-0280').html('拾われた物');
+            $('span#szdwa0101-0280').html('拾われた物');
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日本珍拾得物センター</title>
+  <meta name="description" content="全国の警察に届けられた拾得物のうち、特徴的な物件を全国共通形式で配信しています。">
+  <meta property="og:title" content="日本珍拾得物センター">
+  <meta property="og:description" content="全国の警察に届けられた拾得物のうち、特徴的な物件を全国共通形式で配信しています。">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🐻&lt;/text&gt;&lt;/svg&gt;">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="site-title"><a href="./">日本珍拾得物センター</a></h1>
+      <p class="site-tagline">全国の警察に届けられた拾得物のうち、特徴的な物件を全国共通形式で配信しています。</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section aria-labelledby="featured-heading">
+      <h2 id="featured-heading" class="section-heading">注目の拾得物</h2>
+      <div id="featured-list" class="card-list">
+        <p class="empty-state">読み込んでいます…</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="latest-heading">
+      <div class="section-header">
+        <h2 id="latest-heading" class="section-heading">新着の拾得物</h2>
+        <label class="pref-filter">
+          <span class="visually-hidden">都道府県で絞り込む</span>
+          <select id="pref-select">
+            <option value="">全国</option>
+          </select>
+        </label>
+      </div>
+      <div id="latest-list" class="card-list">
+        <p class="empty-state">読み込んでいます…</p>
+      </div>
+      <p class="load-more-wrap">
+        <button id="load-more" class="load-more" hidden>さらに表示</button>
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>出典: 警察庁「警察国民向けポータルサイト」遺失物公表データを編集して配信しています。</p>
+      <p>心当たりのある物件は、各物件に記載の問い合わせ先（警察署等）へ直接ご連絡ください。</p>
+      <p>当サイトは警察庁および都道府県警察とは関係のない個人運営のサイトです。<a href="about.html">このサイトについて</a></p>
+      <p id="updated-at"></p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

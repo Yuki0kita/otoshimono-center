@@ -1,0 +1,246 @@
+/* 日本珍拾得物センター — 1色（藍）+ 無彩色の引き算デザイン */
+
+:root {
+  --color-primary: #33518e;
+  --color-primary-strong: #27406f;
+  --color-bg: #f2f0ea;
+  --color-surface: #ffffff;
+  --color-paper: #fbf8ef;
+  --color-paper-edge: #e5ddc8;
+  --color-paper-hole: #d7cdab;
+  --color-text: #2b2b2b;
+  --color-text-muted: #6b6b6b;
+  --color-line: #e4e4e0;
+  --shadow-card: 0 2px 6px rgba(60, 50, 20, 0.10);
+  --z-header: 100;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #8ba7dd;
+    --color-primary-strong: #a9bfe8;
+    --color-bg: #16171a;
+    --color-surface: #1f2024;
+    --color-paper: #26241d;
+    --color-paper-edge: #3b372a;
+    --color-paper-hole: #4c4633;
+    --color-text: #e6e6e4;
+    --color-text-muted: #9a9a97;
+    --color-line: #2e2f34;
+    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ヘッダー */
+.site-header {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 28px 0 24px;
+}
+
+.site-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+}
+
+.site-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-tagline {
+  margin: 6px 0 0;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* セクション */
+.section-heading {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin: 40px 0 16px;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pref-filter select {
+  font-size: 14px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* カード = 拾得物件票（荷札）。机に散らばった落とし物のように配置する */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.item-card {
+  width: min(100%, 540px);
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-edge);
+  border-radius: 3px;
+  box-shadow: var(--shadow-card);
+  padding: 16px 20px 14px;
+  position: relative;
+  transform: rotate(-1.1deg);
+  transition: transform 200ms ease;
+}
+
+/* 互い違いに置く。傾きは3枚周期でわずかに変える */
+.card-list .item-card:nth-child(2n) {
+  margin-left: auto;
+  transform: rotate(1.2deg);
+}
+
+.card-list .item-card:nth-child(3n) {
+  transform: rotate(0.5deg);
+}
+
+/* 手に取ると水平に戻る */
+.item-card:hover {
+  transform: rotate(0deg);
+}
+
+/* 荷札の穴（ハトメ） */
+.item-card::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 3px solid var(--color-paper-hole);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.item-meta {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  margin: 0 0 6px 30px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px dashed var(--color-paper-edge);
+  padding-bottom: 6px;
+}
+
+.item-name {
+  margin: 4px 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.item-body {
+  margin: 0;
+  font-size: 15px;
+}
+
+.item-contact {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.item-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 16px;
+}
+
+.item-actions a,
+.item-actions button {
+  font-size: 13px;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.item-actions a:hover,
+.item-actions button:hover {
+  text-decoration: underline;
+}
+
+/* 空状態・フッター */
+.empty-state {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.load-more-wrap {
+  text-align: center;
+  margin: 24px 0 0;
+}
+
+.load-more {
+  font-size: 14px;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  padding: 8px 28px;
+  cursor: pointer;
+}
+
+.site-footer {
+  margin-top: 64px;
+  padding: 32px 0 48px;
+  border-top: 1px solid var(--color-line);
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+}
+
+.site-footer p { margin: 4px 0; }
+
+.site-footer a { color: var(--color-primary); }
+
+/* 補助 */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* aboutページ */
+.about-body h2 {
+  font-size: 17px;
+  margin: 36px 0 8px;
+}
+
+.about-body p { margin: 8px 0; }
