@@ -3,6 +3,10 @@
 const FEATURED_THRESHOLD = 40;
 const FEATURED_COUNT = 5;
 const PAGE_SIZE = 30;
+const DATA_SOURCES = [
+  "https://raw.githubusercontent.com/Yuki0kita/otoshimono-center/main/site/data/items.json",
+  "data/items.json",
+];
 
 const state = {
   items: [],
@@ -133,12 +137,25 @@ function populatePrefSelect() {
   });
 }
 
+async function loadData() {
+  let lastError;
+  for (const url of DATA_SOURCES) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      lastError = err;
+      console.warn(`データを ${url} から読み込めませんでした`, err);
+    }
+  }
+  throw lastError;
+}
+
 async function main() {
   let payload;
   try {
-    const res = await fetch("data/items.json");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    payload = await res.json();
+    payload = await loadData();
   } catch (err) {
     console.error("データの読み込みに失敗しました", err);
     document.getElementById("featured-list").innerHTML =
