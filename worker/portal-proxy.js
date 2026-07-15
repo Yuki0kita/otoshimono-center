@@ -120,38 +120,41 @@ function menuForm() {
 }
 
 function searchForm(payload) {
-  const form = new URLSearchParams({
-    ishitsuFromDate: payload.date_from,
-    ishitsuToDate: payload.date_to,
-    initIshitsuToDate: payload.date_to,
-    _prefValue: "1",
-    prefCheck: payload.pref_codes[0],
-    _cityCdValue: "1",
-    fushoFlg: "true",
-    _fushoFlg: "on",
-    bashoShuruiValue: "",
-    shisetsuNm: "",
-    searchMethod: "1",
-    bunruiValue: payload.bunrui_code,
-    goodsTypeValue: "",
-    buppinNmValue: "",
-    keyword: "",
-    keywordEdit: "",
-    conditionFlg: "1",
-    sortNum: "",
-    sortType: "",
-    pageTopRecordNum: "0",
-    dispCountPerPageSelect: "10,20,100",
-    limitNum: "500",
-    langCd: "01",
-    initFushoFlg: "true",
-    initSearchMethod: "1",
-    initConditionFlg: "1",
-    totalRecordCount: "0",
-    commonHeaderZoomSize: "100",
-  });
+  const form = new URLSearchParams();
+  form.append("ishitsuFromDate", payload.date_from);
+  form.append("ishitsuToDate", payload.date_to);
+  form.append("initIshitsuToDate", payload.date_to);
   for (const code of payload.pref_codes) {
     form.append("prefValue", code);
+  }
+  for (const [name, value] of [
+    ["_prefValue", "1"],
+    ["prefCheck", payload.pref_codes[0]],
+    ["_cityCdValue", "1"],
+    ["fushoFlg", "true"],
+    ["_fushoFlg", "on"],
+    ["bashoShuruiValue", ""],
+    ["shisetsuNm", ""],
+    ["searchMethod", "1"],
+    ["bunruiValue", payload.bunrui_code],
+    ["goodsTypeValue", ""],
+    ["buppinNmValue", ""],
+    ["keyword", ""],
+    ["keywordEdit", ""],
+    ["conditionFlg", "1"],
+    ["sortNum", ""],
+    ["sortType", ""],
+    ["pageTopRecordNum", "0"],
+    ["dispCountPerPageSelect", "10,20,100"],
+    ["limitNum", "500"],
+    ["langCd", "01"],
+    ["initFushoFlg", "true"],
+    ["initSearchMethod", "1"],
+    ["initConditionFlg", "1"],
+    ["totalRecordCount", "0"],
+    ["commonHeaderZoomSize", "100"],
+  ]) {
+    form.append(name, value);
   }
   return form.toString();
 }
