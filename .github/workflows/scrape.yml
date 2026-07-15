@@ -9,14 +9,33 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: daily-scrape
+  cancel-in-progress: false
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUNBUFFERED: "1"
+      PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
+      PORTAL_PROXY_TOKEN: ${{ secrets.PORTAL_PROXY_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - name: Check portal connection
+        run: |
+          set -o pipefail
+          curl --silent --show-error --fail \
+            --retry 3 --retry-all-errors --retry-delay 5 \
+            --connect-timeout 15 --max-time 45 \
+            --dump-header - --output /dev/null \
+            --header "X-Otoshimono-Proxy-Token: ${PORTAL_PROXY_TOKEN}" \
+            "${PORTAL_BASE_URL}/health" \
+            | grep -Ei '^(HTTP/|x-otoshimono-proxy-colo:)'
       - name: Run scraper
         run: python -m scraper.run --days 3
       - name: Commit updated data

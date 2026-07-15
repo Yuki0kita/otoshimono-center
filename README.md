@@ -7,6 +7,11 @@
 - 収集: GitHub Actions（毎日JST 06:30、`python -m scraper.run --days 3`）
 - 配信: 静的サイト（`site/`）+ JSON
 
+GitHubのクラウド回線から警察庁ポータルへ直接接続するとタイムアウトするため、
+日次収集では認証付きのCloudflare Workerを経由する。Workerは1回の呼び出し内で
+検索セッション開始から全ページ取得までを完結し、直接実行時は従来どおり
+警察庁ポータルへ接続する。
+
 ## セットアップ
 
 ```sh
@@ -15,6 +20,9 @@ python3 -m venv .venv
 .venv/bin/python -m pytest tests/
 .venv/bin/python -m scraper.run --days 7
 ```
+
+日次収集には、GitHubのRepository variable `PORTAL_BASE_URL`とRepository secret
+`PORTAL_PROXY_TOKEN`、Cloudflare Worker側の同名secretが必要。
 
 ## 注意
 

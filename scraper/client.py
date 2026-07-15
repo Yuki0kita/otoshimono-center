@@ -8,7 +8,9 @@
 from __future__ import annotations
 
 import http.cookiejar
+import json
 import logging
+import os
 import time
 import urllib.error
 import urllib.parse
@@ -31,25 +33,23 @@ class PortalClient:
         self._opener = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
         )
-        self._opener.addheaders = [("User-Agent", _USER_AGENT)]
+        headers = [("User-Agent", _USER_AGENT)]
+        proxy_token = os.environ.get("PORTAL_PROXY_TOKEN")
+        if proxy_token:
+            headers.append(("X-Otoshimono-Proxy-Token", proxy_token))
+        self._opener.addheaders = headers
+        self._batch_proxy = bool(proxy_token)
         self._session_ready = False
 
-    def _request(self, url: str, data: dict[str, list[str] | str] | None = None) -> str:
-        body = None
-        if data is not None:
-            pairs: list[tuple[str, str]] = []
-            for key, value in data.items():
-                if isinstance(value, list):
-                    pairs.extend((key, v) for v in value)
-                else:
-                    pairs.append((key, value))
-            body = urllib.parse.urlencode(pairs).encode()
+    def _open(
+        self,
+        request: str | urllib.request.Request,
+        timeout_sec: int = _REQUEST_TIMEOUT_SEC,
+    ) -> str:
         for attempt in range(1, _RETRY_ATTEMPTS + 1):
             time.sleep(self._interval)
             try:
-                with self._opener.open(
-                    url, data=body, timeout=_REQUEST_TIMEOUT_SEC
-                ) as res:
+                with self._opener.open(request, timeout=timeout_sec) as res:
                     return res.read().decode("utf-8", errors="replace")
             except (urllib.error.URLError, TimeoutError) as exc:
                 if attempt == _RETRY_ATTEMPTS:
@@ -63,6 +63,27 @@ class PortalClient:
                 )
                 time.sleep(_RETRY_BACKOFF_SEC)
         raise AssertionError("unreachable")
+
+    def _request(self, url: str, data: dict[str, list[str] | str] | None = None) -> str:
+        body = None
+        if data is not None:
+            pairs: list[tuple[str, str]] = []
+            for key, value in data.items():
+                if isinstance(value, list):
+                    pairs.extend((key, v) for v in value)
+                else:
+                    pairs.append((key, value))
+            body = urllib.parse.urlencode(pairs).encode()
+        request = urllib.request.Request(url, data=body)
+        return self._open(request)
+
+    def _request_json(self, url: str, payload: dict) -> dict:
+        request = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        return json.loads(self._open(request, timeout_sec=120))
 
     def _ensure_session(self) -> None:
         if self._session_ready:
@@ -141,6 +162,11 @@ class PortalClient:
         date_to: str,
     ) -> SearchPage:
         """検索して全ページ分の物件を集める。500件超なら over_limit で返す。"""
+        if self._batch_proxy:
+            return self._search_all_pages_via_proxy(
+                pref_codes, bunrui_code, date_from, date_to
+            )
+
         first = self.search(pref_codes, bunrui_code, date_from, date_to)
         if first.over_limit or first.total <= len(first.items):
             return first
@@ -160,3 +186,50 @@ class PortalClient:
             bunrui_code, len(pref_codes), first.total, len(items),
         )
         return SearchPage(total=first.total, items=items, over_limit=False)
+
+    def _search_all_pages_via_proxy(
+        self,
+        pref_codes: list[str],
+        bunrui_code: str,
+        date_from: str,
+        date_to: str,
+    ) -> SearchPage:
+        expected = received = 0
+        for attempt in range(1, _RETRY_ATTEMPTS + 1):
+            payload = self._request_json(
+                f"{BASE_URL}/batch-search",
+                {
+                    "pref_codes": pref_codes,
+                    "bunrui_code": bunrui_code,
+                    "date_from": date_from,
+                    "date_to": date_to,
+                },
+            )
+            first = parse_search_page(payload["first"])
+            if first.over_limit or first.total <= len(first.items):
+                return first
+
+            items: list[FoundItem] = []
+            seen: set[str] = set()
+            received = 0
+            for html in payload.get("pages", []):
+                page = parse_search_page(html)
+                received += len(page.items)
+                for item in page.items:
+                    if item.item_id not in seen:
+                        seen.add(item.item_id)
+                        items.append(item)
+            expected = first.total
+            if received >= expected:
+                logger.info(
+                    "proxy search bunrui=%s prefs=%d total=%d rows=%d unique=%d",
+                    bunrui_code, len(pref_codes), expected, received, len(items),
+                )
+                return SearchPage(total=expected, items=items, over_limit=False)
+            logger.warning(
+                "proxy returned incomplete result (%d/%d): expected=%d actual=%d",
+                attempt, _RETRY_ATTEMPTS, expected, received,
+            )
+        raise RuntimeError(
+            f"proxy returned incomplete result: expected={expected} actual={received}"
+        )

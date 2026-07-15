@@ -1,6 +1,9 @@
 """警察国民向けポータル（遺失物公表）関連の定数。"""
 
-BASE_URL = "https://lostproperty.pcf.npa.go.jp/ZDSERVFP"
+import os
+
+_DEFAULT_BASE_URL = "https://lostproperty.pcf.npa.go.jp/ZDSERVFP"
+BASE_URL = (os.environ.get("PORTAL_BASE_URL") or _DEFAULT_BASE_URL).rstrip("/")
 
 # 都道府県コード（ポータルの prefValue）
 PREF_CODES: dict[str, str] = {

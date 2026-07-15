@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "otoshimono-portal-proxy",
+  "main": "portal-proxy.js",
+  "compatibility_date": "2026-07-15",
+  "workers_dev": true,
+  "preview_urls": false,
+  "placement": {
+    "region": "aws:ap-northeast-1"
+  },
+  "secrets": {
+    "required": ["PORTAL_PROXY_TOKEN"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}
