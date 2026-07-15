@@ -1,10 +1,10 @@
 const ORIGIN = "https://lostproperty.pcf.npa.go.jp";
-const ALLOWED_PATHS = new Set([
-  "/ZDSERVFP/SZDSA0101",
-  "/ZDSERVFP/SZDSA0101/next",
-  "/ZDSERVFP/SZDWA0101",
-  "/ZDSERVFP/SZDWA0101/search",
-]);
+const REQUEST_INTERVAL_MS = 1500;
+const RETRY_BACKOFF_MS = 5000;
+const RETRY_ATTEMPTS = 3;
+const PAGE_SIZE = 100;
+const OVER_LIMIT_TEXT = "500件を超えているため";
+const COUNT_PATTERN = /(\d+)件中\d+-\d+件を表示/;
 
 function safeEqual(left, right) {
   if (!left || !right || left.length !== right.length) {
@@ -17,79 +17,192 @@ function safeEqual(left, right) {
   return difference === 0;
 }
 
-function upstreamHeaders(request) {
-  const headers = new Headers();
-  for (const name of [
-    "accept",
-    "accept-language",
-    "content-type",
-    "cookie",
-    "user-agent",
-  ]) {
-    const value = request.headers.get(name);
-    if (value) {
-      headers.set(name, value);
+function responseHeaders(request) {
+  return {
+    "cache-control": "no-store",
+    "x-otoshimono-proxy-colo":
+      request.headers.get("cf-placement") || request.cf?.colo || "unknown",
+  };
+}
+
+function absorbCookies(response, cookies) {
+  const values = response.headers.getAll("Set-Cookie");
+  for (const value of values) {
+    const pair = value.split(";", 1)[0];
+    const separator = pair.indexOf("=");
+    if (separator > 0) {
+      cookies.set(pair.slice(0, separator), pair.slice(separator + 1));
     }
   }
-  return headers;
+}
+
+function cookieHeader(cookies) {
+  return [...cookies].map(([name, value]) => `${name}=${value}`).join("; ");
+}
+
+async function fetchOrigin(path, options, cookies) {
+  let lastError;
+  for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt += 1) {
+    await scheduler.wait(attempt === 1 ? REQUEST_INTERVAL_MS : RETRY_BACKOFF_MS);
+    try {
+      const headers = new Headers({
+        accept: "text/html,application/xhtml+xml",
+        "accept-language": "ja,en;q=0.5",
+        "user-agent": "otoshimono-center/0.1 (personal aggregator; polite crawl)",
+      });
+      if (options.body) {
+        headers.set("content-type", "application/x-www-form-urlencoded");
+      }
+      if (cookies.size) {
+        headers.set("cookie", cookieHeader(cookies));
+      }
+
+      const response = await fetch(`${ORIGIN}${path}`, {
+        method: options.method || "GET",
+        headers,
+        body: options.body,
+        redirect: "manual",
+        signal: AbortSignal.timeout(30000),
+      });
+      absorbCookies(response, cookies);
+      if (response.ok) {
+        return response.text();
+      }
+      lastError = new Error(`upstream returned ${response.status}`);
+      if (response.status < 500) {
+        break;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("upstream request failed");
+}
+
+function menuForm() {
+  return new URLSearchParams({
+    menuSelect: "1",
+    menuSelectValue: "",
+    langCd: "01",
+    commonHeaderZoomSize: "100",
+  }).toString();
+}
+
+function searchForm(payload) {
+  const form = new URLSearchParams({
+    ishitsuFromDate: payload.date_from,
+    ishitsuToDate: payload.date_to,
+    initIshitsuToDate: payload.date_to,
+    _prefValue: "1",
+    prefCheck: payload.pref_codes[0],
+    _cityCdValue: "1",
+    fushoFlg: "true",
+    _fushoFlg: "on",
+    bashoShuruiValue: "",
+    shisetsuNm: "",
+    searchMethod: "1",
+    bunruiValue: payload.bunrui_code,
+    goodsTypeValue: "",
+    buppinNmValue: "",
+    keyword: "",
+    keywordEdit: "",
+    conditionFlg: "1",
+    sortNum: "",
+    sortType: "",
+    pageTopRecordNum: "0",
+    dispCountPerPageSelect: "10,20,100",
+    limitNum: "500",
+    langCd: "01",
+    initFushoFlg: "true",
+    initSearchMethod: "1",
+    initConditionFlg: "1",
+    totalRecordCount: "0",
+    commonHeaderZoomSize: "100",
+  });
+  for (const code of payload.pref_codes) {
+    form.append("prefValue", code);
+  }
+  return form.toString();
+}
+
+function validPayload(payload) {
+  return (
+    Array.isArray(payload?.pref_codes) &&
+    payload.pref_codes.length > 0 &&
+    payload.pref_codes.length <= 47 &&
+    payload.pref_codes.every((code) => /^\d{2}$/.test(code)) &&
+    /^\d{4}$/.test(payload?.bunrui_code || "") &&
+    /^\d{4}\/\d{2}\/\d{2}$/.test(payload?.date_from || "") &&
+    /^\d{4}\/\d{2}\/\d{2}$/.test(payload?.date_to || "")
+  );
+}
+
+async function batchSearch(payload) {
+  const cookies = new Map();
+  await fetchOrigin("/ZDSERVFP/SZDSA0101", {}, cookies);
+  await fetchOrigin(
+    "/ZDSERVFP/SZDSA0101/next",
+    { method: "POST", body: menuForm() },
+    cookies,
+  );
+  const first = await fetchOrigin(
+    "/ZDSERVFP/SZDWA0101/search",
+    { method: "POST", body: searchForm(payload) },
+    cookies,
+  );
+
+  const pages = [];
+  if (!first.includes(OVER_LIMIT_TEXT)) {
+    const count = first.match(COUNT_PATTERN);
+    const total = count ? Number(count[1]) : 0;
+    if (total > 10) {
+      for (let top = 0; top < total; top += PAGE_SIZE) {
+        pages.push(
+          await fetchOrigin(
+            `/ZDSERVFP/SZDWA0101?&gDispCountPerPage=${PAGE_SIZE}` +
+              `&gPageTopRecordNum=${top}&OC_TRANSACTION_TOKEN=null`,
+            {},
+            cookies,
+          ),
+        );
+      }
+    }
+  }
+  return { first, pages };
 }
 
 export default {
   async fetch(request, env) {
+    const headers = responseHeaders(request);
     if (
       !safeEqual(
         request.headers.get("x-otoshimono-proxy-token"),
         env.PORTAL_PROXY_TOKEN,
       )
     ) {
-      return new Response("Forbidden", { status: 403 });
+      return new Response("Forbidden", { status: 403, headers });
     }
 
-    const requestUrl = new URL(request.url);
-    if (
-      !["GET", "POST"].includes(request.method) ||
-      !ALLOWED_PATHS.has(requestUrl.pathname)
-    ) {
-      return new Response("Not Found", { status: 404 });
-    }
-
-    const contentLength = Number(request.headers.get("content-length") || "0");
-    if (contentLength > 64 * 1024) {
-      return new Response("Payload Too Large", { status: 413 });
-    }
-
-    const target = new URL(requestUrl.pathname + requestUrl.search, ORIGIN);
-    const upstream = await fetch(target, {
-      method: request.method,
-      headers: upstreamHeaders(request),
-      body: request.method === "POST" ? request.body : undefined,
-      redirect: "manual",
-    });
-
-    const responseHeaders = new Headers(upstream.headers);
-    const location = responseHeaders.get("location");
-    if (location) {
-      const redirectTarget = new URL(location, target);
-      if (redirectTarget.origin === ORIGIN) {
-        responseHeaders.set(
-          "location",
-          new URL(
-            redirectTarget.pathname + redirectTarget.search,
-            requestUrl.origin,
-          ).toString(),
-        );
+    const url = new URL(request.url);
+    try {
+      if (request.method === "GET" && url.pathname === "/health") {
+        await fetchOrigin("/ZDSERVFP/SZDSA0101", {}, new Map());
+        return Response.json({ ok: true }, { headers });
       }
+      if (request.method === "POST" && url.pathname === "/batch-search") {
+        const payload = await request.json();
+        if (!validPayload(payload)) {
+          return new Response("Bad Request", { status: 400, headers });
+        }
+        return Response.json(await batchSearch(payload), { headers });
+      }
+      return new Response("Not Found", { status: 404, headers });
+    } catch (error) {
+      console.error(error);
+      return Response.json(
+        { error: "upstream request failed" },
+        { status: 502, headers },
+      );
     }
-    responseHeaders.set("cache-control", "no-store");
-    responseHeaders.set(
-      "x-otoshimono-proxy-colo",
-      request.headers.get("cf-placement") || request.cf?.colo || "unknown",
-    );
-
-    return new Response(upstream.body, {
-      status: upstream.status,
-      statusText: upstream.statusText,
-      headers: responseHeaders,
-    });
   },
 };

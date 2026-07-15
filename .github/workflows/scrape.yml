@@ -34,7 +34,7 @@ jobs:
             --connect-timeout 15 --max-time 45 \
             --dump-header - --output /dev/null \
             --header "X-Otoshimono-Proxy-Token: ${PORTAL_PROXY_TOKEN}" \
-            "${PORTAL_BASE_URL}/SZDSA0101" \
+            "${PORTAL_BASE_URL}/health" \
             | grep -Ei '^(HTTP/|x-otoshimono-proxy-colo:)'
       - name: Run scraper
         run: python -m scraper.run --days 3
