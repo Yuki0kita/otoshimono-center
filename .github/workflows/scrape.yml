@@ -15,12 +15,12 @@ concurrency:
 
 jobs:
   scrape:
-    # 警察庁ポータルへの接続が Linux hosted runner ではタイムアウトするため、
-    # 接続経路の異なる macOS hosted runner を使用する。
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
       PYTHONUNBUFFERED: "1"
+      PORTAL_BASE_URL: ${{ vars.PORTAL_BASE_URL }}
+      PORTAL_PROXY_TOKEN: ${{ secrets.PORTAL_PROXY_TOKEN }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6

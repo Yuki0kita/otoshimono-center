@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import http.cookiejar
 import logging
+import os
 import time
 import urllib.error
 import urllib.parse
@@ -31,7 +32,11 @@ class PortalClient:
         self._opener = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
         )
-        self._opener.addheaders = [("User-Agent", _USER_AGENT)]
+        headers = [("User-Agent", _USER_AGENT)]
+        proxy_token = os.environ.get("PORTAL_PROXY_TOKEN")
+        if proxy_token:
+            headers.append(("X-Otoshimono-Proxy-Token", proxy_token))
+        self._opener.addheaders = headers
         self._session_ready = False
 
     def _request(self, url: str, data: dict[str, list[str] | str] | None = None) -> str:
