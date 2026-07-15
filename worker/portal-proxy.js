@@ -43,34 +43,65 @@ function cookieHeader(cookies) {
 async function fetchOrigin(path, options, cookies) {
   let lastError;
   for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt += 1) {
-    await scheduler.wait(attempt === 1 ? REQUEST_INTERVAL_MS : RETRY_BACKOFF_MS);
     try {
-      const headers = new Headers({
-        accept: "text/html,application/xhtml+xml",
-        "accept-language": "ja,en;q=0.5",
-        "user-agent": "otoshimono-center/0.1 (personal aggregator; polite crawl)",
-      });
-      if (options.body) {
-        headers.set("content-type", "application/x-www-form-urlencoded");
-      }
-      if (cookies.size) {
-        headers.set("cookie", cookieHeader(cookies));
-      }
+      let target = new URL(path, ORIGIN);
+      let method = options.method || "GET";
+      let body = options.body;
+      for (let redirectCount = 0; redirectCount <= 3; redirectCount += 1) {
+        await scheduler.wait(
+          redirectCount === 0 && attempt > 1
+            ? RETRY_BACKOFF_MS
+            : REQUEST_INTERVAL_MS,
+        );
+        const headers = new Headers({
+          accept: "text/html,application/xhtml+xml",
+          "accept-language": "ja,en;q=0.5",
+          "user-agent": "otoshimono-center/0.1 (personal aggregator; polite crawl)",
+        });
+        if (body) {
+          headers.set("content-type", "application/x-www-form-urlencoded");
+        }
+        if (cookies.size) {
+          headers.set("cookie", cookieHeader(cookies));
+        }
 
-      const response = await fetch(`${ORIGIN}${path}`, {
-        method: options.method || "GET",
-        headers,
-        body: options.body,
-        redirect: "manual",
-        signal: AbortSignal.timeout(30000),
-      });
-      absorbCookies(response, cookies);
-      if (response.ok) {
-        return response.text();
+        const response = await fetch(target, {
+          method,
+          headers,
+          body,
+          redirect: "manual",
+          signal: AbortSignal.timeout(30000),
+        });
+        absorbCookies(response, cookies);
+        if (response.ok) {
+          return response.text();
+        }
+        if (response.status >= 300 && response.status < 400) {
+          const location = response.headers.get("location");
+          if (!location) {
+            throw new Error(`upstream redirect without location: ${target}`);
+          }
+          const next = new URL(location, target);
+          if (next.origin !== ORIGIN) {
+            throw new Error(`upstream redirected outside portal: ${next.origin}`);
+          }
+          if (
+            response.status === 303 ||
+            ([301, 302].includes(response.status) && method === "POST")
+          ) {
+            method = "GET";
+            body = undefined;
+          }
+          target = next;
+          continue;
+        }
+        lastError = new Error(`upstream returned ${response.status}: ${target}`);
+        if (response.status < 500) {
+          break;
+        }
       }
-      lastError = new Error(`upstream returned ${response.status}`);
-      if (response.status < 500) {
-        break;
+      if (!lastError) {
+        lastError = new Error(`upstream redirect limit exceeded: ${target}`);
       }
     } catch (error) {
       lastError = error;
