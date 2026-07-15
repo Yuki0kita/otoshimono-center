@@ -9,12 +9,21 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: daily-scrape
+  cancel-in-progress: false
+
 jobs:
   scrape:
-    runs-on: ubuntu-latest
+    # 警察庁ポータルへの接続が Linux hosted runner ではタイムアウトするため、
+    # 接続経路の異なる macOS hosted runner を使用する。
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUNBUFFERED: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Run scraper
