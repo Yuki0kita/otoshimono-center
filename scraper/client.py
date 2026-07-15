@@ -194,7 +194,7 @@ class PortalClient:
         date_from: str,
         date_to: str,
     ) -> SearchPage:
-        expected = actual = 0
+        expected = received = 0
         for attempt in range(1, _RETRY_ATTEMPTS + 1):
             payload = self._request_json(
                 f"{BASE_URL}/batch-search",
@@ -211,23 +211,25 @@ class PortalClient:
 
             items: list[FoundItem] = []
             seen: set[str] = set()
+            received = 0
             for html in payload.get("pages", []):
                 page = parse_search_page(html)
+                received += len(page.items)
                 for item in page.items:
                     if item.item_id not in seen:
                         seen.add(item.item_id)
                         items.append(item)
-            expected, actual = first.total, len(items)
-            if actual >= expected:
+            expected = first.total
+            if received >= expected:
                 logger.info(
-                    "proxy search bunrui=%s prefs=%d total=%d fetched=%d",
-                    bunrui_code, len(pref_codes), expected, actual,
+                    "proxy search bunrui=%s prefs=%d total=%d rows=%d unique=%d",
+                    bunrui_code, len(pref_codes), expected, received, len(items),
                 )
                 return SearchPage(total=expected, items=items, over_limit=False)
             logger.warning(
                 "proxy returned incomplete result (%d/%d): expected=%d actual=%d",
-                attempt, _RETRY_ATTEMPTS, expected, actual,
+                attempt, _RETRY_ATTEMPTS, expected, received,
             )
         raise RuntimeError(
-            f"proxy returned incomplete result: expected={expected} actual={actual}"
+            f"proxy returned incomplete result: expected={expected} actual={received}"
         )

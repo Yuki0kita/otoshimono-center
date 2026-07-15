@@ -61,3 +61,19 @@ def test_batch_proxy_rejects_incomplete_pages(monkeypatch):
 
     with pytest.raises(RuntimeError, match="expected=250 actual=0"):
         client.search_all_pages(["30"], "1600", "2026/07/01", "2026/07/02")
+
+
+def test_batch_proxy_counts_received_rows_before_deduplication(monkeypatch):
+    monkeypatch.setenv("PORTAL_PROXY_TOKEN", "test-token")
+    client = PortalClient(interval_sec=0)
+    fixture = (FIXTURES / "search_result_tokyo_wallet.html").read_text()
+    monkeypatch.setattr(
+        client,
+        "_request_json",
+        lambda *_: {"first": fixture, "pages": [fixture] * 25},
+    )
+
+    page = client.search_all_pages(["30"], "1600", "2026/07/01", "2026/07/02")
+
+    assert page.total == 250
+    assert len(page.items) == 10
