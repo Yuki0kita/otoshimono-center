@@ -5,6 +5,9 @@
   "compatibility_date": "2026-07-15",
   "workers_dev": true,
   "preview_urls": false,
+  "placement": {
+    "region": "aws:ap-northeast-1"
+  },
   "secrets": {
     "required": ["PORTAL_PROXY_TOKEN"]
   },

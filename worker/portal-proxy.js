@@ -80,6 +80,11 @@ export default {
         );
       }
     }
+    responseHeaders.set("cache-control", "no-store");
+    responseHeaders.set(
+      "x-otoshimono-proxy-colo",
+      request.headers.get("cf-placement") || request.cf?.colo || "unknown",
+    );
 
     return new Response(upstream.body, {
       status: upstream.status,
