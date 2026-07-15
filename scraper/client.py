@@ -194,33 +194,40 @@ class PortalClient:
         date_from: str,
         date_to: str,
     ) -> SearchPage:
-        payload = self._request_json(
-            f"{BASE_URL}/batch-search",
-            {
-                "pref_codes": pref_codes,
-                "bunrui_code": bunrui_code,
-                "date_from": date_from,
-                "date_to": date_to,
-            },
-        )
-        first = parse_search_page(payload["first"])
-        if first.over_limit or first.total <= len(first.items):
-            return first
-
-        items: list[FoundItem] = []
-        seen: set[str] = set()
-        for html in payload.get("pages", []):
-            page = parse_search_page(html)
-            for item in page.items:
-                if item.item_id not in seen:
-                    seen.add(item.item_id)
-                    items.append(item)
-        if len(items) < first.total:
-            raise RuntimeError(
-                f"proxy returned incomplete result: expected={first.total} actual={len(items)}"
+        expected = actual = 0
+        for attempt in range(1, _RETRY_ATTEMPTS + 1):
+            payload = self._request_json(
+                f"{BASE_URL}/batch-search",
+                {
+                    "pref_codes": pref_codes,
+                    "bunrui_code": bunrui_code,
+                    "date_from": date_from,
+                    "date_to": date_to,
+                },
             )
-        logger.info(
-            "proxy search bunrui=%s prefs=%d total=%d fetched=%d",
-            bunrui_code, len(pref_codes), first.total, len(items),
+            first = parse_search_page(payload["first"])
+            if first.over_limit or first.total <= len(first.items):
+                return first
+
+            items: list[FoundItem] = []
+            seen: set[str] = set()
+            for html in payload.get("pages", []):
+                page = parse_search_page(html)
+                for item in page.items:
+                    if item.item_id not in seen:
+                        seen.add(item.item_id)
+                        items.append(item)
+            expected, actual = first.total, len(items)
+            if actual >= expected:
+                logger.info(
+                    "proxy search bunrui=%s prefs=%d total=%d fetched=%d",
+                    bunrui_code, len(pref_codes), expected, actual,
+                )
+                return SearchPage(total=expected, items=items, over_limit=False)
+            logger.warning(
+                "proxy returned incomplete result (%d/%d): expected=%d actual=%d",
+                attempt, _RETRY_ATTEMPTS, expected, actual,
+            )
+        raise RuntimeError(
+            f"proxy returned incomplete result: expected={expected} actual={actual}"
         )
-        return SearchPage(total=first.total, items=items, over_limit=False)

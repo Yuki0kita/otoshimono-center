@@ -2,7 +2,7 @@ const ORIGIN = "https://lostproperty.pcf.npa.go.jp";
 const REQUEST_INTERVAL_MS = 1500;
 const RETRY_BACKOFF_MS = 5000;
 const RETRY_ATTEMPTS = 3;
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 500;
 const OVER_LIMIT_TEXT = "500件を超えているため";
 const COUNT_PATTERN = /(\d+)件中\d+-\d+件を表示/;
 
@@ -181,22 +181,26 @@ async function batchSearch(payload) {
     { method: "POST", body: searchForm(payload) },
     cookies,
   );
+  const selectedCategory = new RegExp(
+    `value="${payload.bunrui_code}"[^>]*selected`,
+  );
+  if (!selectedCategory.test(first)) {
+    throw new Error("portal did not apply the requested search state");
+  }
 
   const pages = [];
   if (!first.includes(OVER_LIMIT_TEXT)) {
     const count = first.match(COUNT_PATTERN);
     const total = count ? Number(count[1]) : 0;
     if (total > 10) {
-      for (let top = 0; top < total; top += PAGE_SIZE) {
-        pages.push(
-          await fetchOrigin(
-            `/ZDSERVFP/SZDWA0101?&gDispCountPerPage=${PAGE_SIZE}` +
-              `&gPageTopRecordNum=${top}&OC_TRANSACTION_TOKEN=null`,
-            {},
-            cookies,
-          ),
-        );
-      }
+      pages.push(
+        await fetchOrigin(
+          `/ZDSERVFP/SZDWA0101?&gDispCountPerPage=${PAGE_SIZE}` +
+            "&gPageTopRecordNum=0&OC_TRANSACTION_TOKEN=null",
+          {},
+          cookies,
+        ),
+      );
     }
   }
   return { first, pages };
