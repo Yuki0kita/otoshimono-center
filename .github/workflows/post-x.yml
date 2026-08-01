@@ -1,0 +1,66 @@
+name: post-to-x
+
+on:
+  schedule:
+    # JST 09:10 / 14:40 / 20:20 に起動し、スクリプト側が確率と最小間隔で
+    # 実際に投稿するかを決める（毎回同じ時刻に流れないようにするため）
+    - cron: "10 0 * * *"
+    - cron: "40 5 * * *"
+    - cron: "20 11 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "投稿せず内容だけ確認する"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post-to-x
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONUNBUFFERED: "1"
+      X_API_KEY: ${{ secrets.X_API_KEY }}
+      X_API_SECRET: ${{ secrets.X_API_SECRET }}
+      X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+      X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check credentials
+        id: creds
+        run: |
+          if [ -z "$X_API_KEY" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::X の認証情報が未設定のため、予行演習のみ実行します"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dry run
+        if: steps.creds.outputs.ready != 'true' || inputs.dry_run
+        run: python -m poster.post --chance 1.0 --min-interval-hours 0
+
+      - name: Post
+        if: steps.creds.outputs.ready == 'true' && !inputs.dry_run
+        run: python -m poster.post --post
+
+      - name: Commit post history
+        if: steps.creds.outputs.ready == 'true' && !inputs.dry_run
+        run: |
+          git config user.name "otoshimono-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/posted.json
+          git diff --cached --quiet || git commit -m "chore: X投稿履歴を更新"
+          git pull --rebase --autostash
+          git push

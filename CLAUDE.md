@@ -30,6 +30,14 @@
 - 拾得日「不明」の物件が存在する（遺失日ベースの登録）
 - 公表は拾得日からおおむね3ヶ月で消える。MAX_ITEMS=5000で古いものから破棄
 
+## X自動投稿（poster/）
+
+- `poster/x_client.py` — X API v2 POST /2/tweets を OAuth 1.0a で署名（標準ライブラリのみ）
+- `poster/compose.py` — 投稿物件の選定と文面組み立て。選定は `name_score()`（品名のみのスコア）で行う
+- `poster/post.py` — 既定は予行演習。`--post` で実投稿。`--chance` / `--min-interval-hours` で不定期化
+- `.github/workflows/post-x.yml` — Secrets 未設定なら予行演習のみで落ちない
+- 投稿済みIDは `data/posted.json`
+
 ## 運用ルール
 
 - 収集対象カテゴリは `constants.TARGET_BUNRUI`。増やすときはリクエスト数（=巡回時間）に注意
