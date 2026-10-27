@@ -76,8 +76,12 @@ function renderCard(item) {
   const share = document.createElement("a");
   share.href = shareUrl(item);
   share.target = "_blank";
-  share.rel = "noopener";
+  share.rel = "noopener noreferrer";
   share.textContent = "Xで共有";
+  const newTab = document.createElement("span");
+  newTab.className = "visually-hidden";
+  newTab.textContent = "（新しいタブで開きます）";
+  share.appendChild(newTab);
   actions.appendChild(share);
 
   card.append(meta, name, body, contact, actions);
