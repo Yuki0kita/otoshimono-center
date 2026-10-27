@@ -173,14 +173,21 @@ class PortalClient:
 
         items: list[FoundItem] = []
         seen: set[str] = set()
+        received = 0
         for top in range(0, first.total, PAGE_SIZE):
             page = self.fetch_page(top)
             if page.over_limit:
                 return page
+            received += len(page.items)
             for item in page.items:
                 if item.item_id not in seen:
                     seen.add(item.item_id)
                     items.append(item)
+        if received < first.total:
+            # セッション切れ等でページが空になると一部だけ保存されるため失敗にする
+            raise RuntimeError(
+                f"paging returned incomplete result: expected={first.total} actual={received}"
+            )
         logger.info(
             "search bunrui=%s prefs=%d total=%d fetched=%d",
             bunrui_code, len(pref_codes), first.total, len(items),
