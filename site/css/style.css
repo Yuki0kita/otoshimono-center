@@ -127,7 +127,8 @@ body {
 }
 
 /* 手に取ると水平に戻る */
-.item-card:hover {
+.item-card:hover,
+.item-card:focus-within {
   transform: rotate(0deg);
 }
 
@@ -232,6 +233,9 @@ body {
   position: absolute;
   width: 1px;
   height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
@@ -244,3 +248,21 @@ body {
 }
 
 .about-body p { margin: 8px 0; }
+
+/* キーボード操作時のフォーカス表示 */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.site-header a:focus-visible {
+  outline-color: #fff;
+}
+
+/* 動きを減らす設定では傾きのアニメーションをやめる */
+@media (prefers-reduced-motion: reduce) {
+  .item-card { transition: none; }
+}

@@ -1,6 +1,13 @@
 import pathlib
 
-from scraper.parse import FoundItem, _split_date_cell, parse_search_page
+import pytest
+
+from scraper.parse import (
+    FoundItem,
+    PageStructureError,
+    _split_date_cell,
+    parse_search_page,
+)
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures"
 
@@ -39,6 +46,18 @@ class TestParseSearchPage:
         assert not page.over_limit
         assert page.total == 0
         assert page.items == []
+
+
+    def test_missing_table_with_count_raises(self):
+        html = _load("search_result_tokyo_wallet.html").replace('id="table-pc"', 'id="table-x"')
+        with pytest.raises(PageStructureError):
+            parse_search_page(html)
+
+    def test_changed_column_count_raises(self):
+        # 列が増減すると全行がスキップされ、0件と誤認する
+        html = _load("search_result_tokyo_wallet.html").replace("</td>", "</td><td>追加列</td>")
+        with pytest.raises(PageStructureError):
+            parse_search_page(html)
 
 
 class TestFoundItem:

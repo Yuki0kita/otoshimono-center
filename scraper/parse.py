@@ -12,6 +12,10 @@ _OVER_LIMIT_TEXT = "500件を超えているため"
 _REF_PREF_RE = re.compile(r"^(\d{2})-\d{3}-")
 
 
+class PageStructureError(Exception):
+    """件数表示はあるのに物件行が取れない（ポータルのHTML構造変更の疑い）。"""
+
+
 @dataclass
 class FoundItem:
     found_date: str  # 拾われた日付（"不明" あり）
@@ -53,6 +57,8 @@ def parse_search_page(html: str) -> SearchPage:
     """検索結果HTMLから件数と物件一覧を取り出す。
 
     件数表示がない場合は0件ページとして扱う（500件超エラーは over_limit で区別）。
+    件数が1以上なのに物件行を1件も取り出せない場合は、構造変更を黙って
+    0件として扱わないよう PageStructureError を送出する。
     """
     if _OVER_LIMIT_TEXT in html:
         return SearchPage(total=-1, items=[], over_limit=True)
@@ -60,14 +66,23 @@ def parse_search_page(html: str) -> SearchPage:
     m = _COUNT_RE.search(html)
     total = int(m.group(1)) if m else 0
 
+    items = _parse_rows(html)
+    if total > 0 and not items:
+        raise PageStructureError(
+            f"件数表示は{total}件だが物件行を取り出せません（table-pc の構造変更の疑い）"
+        )
+    return SearchPage(total=total, items=items, over_limit=False)
+
+
+def _parse_rows(html: str) -> list[FoundItem]:
     items: list[FoundItem] = []
     idx = html.find('id="table-pc"')
     if idx < 0:
-        return SearchPage(total=total, items=items, over_limit=False)
+        return items
 
     tbody_m = re.search(r"<tbody[^>]*>(.*?)</tbody>", html[idx:], re.S)
     if not tbody_m:
-        return SearchPage(total=total, items=items, over_limit=False)
+        return items
 
     for row_m in re.finditer(r"<tr[^>]*>(.*?)</tr>", tbody_m.group(1), re.S):
         cells = [
@@ -91,7 +106,7 @@ def parse_search_page(html: str) -> SearchPage:
                 ref_no=ref_no,
             )
         )
-    return SearchPage(total=total, items=items, over_limit=False)
+    return items
 
 
 def _split_date_cell(cell: str) -> tuple[str, str]:
